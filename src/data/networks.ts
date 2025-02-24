@@ -1,9 +1,12 @@
+// 导入以太坊链参数类型
 import type { AddEthereumChainParameter } from "@web3-react/types";
 
+// 获取环境变量中的 API 密钥
 const infuraKey = process.env.REACT_APP_INFURA_KEY;
 const alchemyKey = infuraKey;
 const groveAppId = process.env.REACT_APP_GROVE_APPID;
 
+// 定义各链的原生代币信息
 const ETH: AddEthereumChainParameter["nativeCurrency"] = {
   name: "Ether",
   symbol: "ETH",
@@ -28,24 +31,28 @@ const BSC: AddEthereumChainParameter["nativeCurrency"] = {
   decimals: 18
 };
 
+// 定义基础链信息接口
 interface BasicChainInformation {
-  chainId: string;
-  urls: string[];
-  publicUrls: string[];
-  name: string;
+  chainId: string;        // 链 ID
+  urls: string[];         // RPC 节点 URL 列表
+  publicUrls: string[];   // 公共 RPC 节点 URL 列表
+  name: string;           // 链名称
 }
 
+// 扩展链信息接口，添加原生代币和区块浏览器信息
 interface ExtendedChainInformation extends BasicChainInformation {
-  nativeCurrency: AddEthereumChainParameter["nativeCurrency"];
-  blockExplorerUrls: AddEthereumChainParameter["blockExplorerUrls"];
+  nativeCurrency: AddEthereumChainParameter["nativeCurrency"];    // 原生代币信息
+  blockExplorerUrls: AddEthereumChainParameter["blockExplorerUrls"];  // 区块浏览器 URL
 }
 
+// 类型判断函数：判断是否为扩展链信息
 function isExtendedChainInformation(
   chainInformation: BasicChainInformation | ExtendedChainInformation
 ): chainInformation is ExtendedChainInformation {
   return !!(chainInformation as ExtendedChainInformation)?.nativeCurrency;
 }
 
+// 获取添加链所需的参数
 export function getAddChainParameters(chainId: number): AddEthereumChainParameter | number {
   const chainInformation = CHAINS[chainId];
   if (isExtendedChainInformation(chainInformation)) {
@@ -61,31 +68,29 @@ export function getAddChainParameters(chainId: number): AddEthereumChainParamete
   }
 }
 
+// 获取指定链的原生代币符号
 export const getNativeByChain = (chainId: number): string | undefined => {
   const chainInformation = CHAINS[chainId];
   if (isExtendedChainInformation(chainInformation)) return chainInformation.nativeCurrency.symbol;
   return undefined;
 };
 
+// 获取指定链的区块浏览器 URL
 export const getExplorer = (chainId: number): string[] | undefined => {
   const chainInformation = CHAINS[chainId];
   if (isExtendedChainInformation(chainInformation)) return chainInformation.blockExplorerUrls;
   return undefined;
 };
 
+// 定义支持的链配置
 export const CHAINS: {
   [chainId: number]: BasicChainInformation | ExtendedChainInformation;
 } = {
+  // 以太坊主网
   1: {
     chainId: "1",
-    urls: [
-      infuraKey ? `https://mainnet.infura.io/v3/${infuraKey}` : "",
-      alchemyKey ? `https://eth-mainnet.g.alchemy.com/v2/${alchemyKey}` : "",
-      groveAppId ? `https://eth-mainnet.rpc.grove.city/v1/${groveAppId}` : "",
-      "https://rpc.ankr.com/eth",
-      "https://cloudflare-eth.com"
-    ].filter(Boolean),
-    publicUrls: ["https://rpc.ankr.com/eth"].filter(Boolean),
+    urls: [/* RPC URLs */],
+    publicUrls: ["https://rpc.ankr.com/eth"],
     name: "Mainnet",
     nativeCurrency: ETH,
     blockExplorerUrls: ["https://etherscan.io"]
@@ -246,27 +251,25 @@ export const CHAINS: {
   }
 };
 
+// 导出所有有效的 RPC URLs
 export const URLS: { [chainId: number]: string[] } = Object.keys(CHAINS).reduce<{ [chainId: number]: string[] }>(
   (accumulator, chainId) => {
     const validURLs: string[] = CHAINS[Number(chainId)].urls;
-
     if (validURLs.length) {
       accumulator[Number(chainId)] = validURLs;
     }
-
     return accumulator;
   },
   {}
 );
 
+// 导出所有链 ID
 export const CHAINIDs: { [chainId: number]: string } = Object.keys(CHAINS).reduce<{ [chainId: number]: string }>(
   (accumulator, chainId) => {
     const validCHAINIDs: string = CHAINS[Number(chainId)].chainId;
-
     if (validCHAINIDs) {
       accumulator[Number(chainId)] = validCHAINIDs;
     }
-
     return accumulator;
   },
   {}
